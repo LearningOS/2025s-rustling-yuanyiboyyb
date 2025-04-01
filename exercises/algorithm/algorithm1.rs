@@ -29,13 +29,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T:std::cmp::PartialOrd+Clone> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: std::cmp::PartialOrd+Clone> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -72,11 +72,38 @@ impl<T> LinkedList<T> {
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
 		//TODO
-		Self {
+	  	Self {
             length: 0,
             start: None,
             end: None,
+        }; 
+        let mut merged_list = LinkedList::new();
+        let mut lista_node= list_a.start;
+        let mut listb_node = list_b.start;
+
+        while let (Some(node_a),Some(node_b)) = (lista_node,listb_node){
+            let val_a = unsafe { &(*node_a.as_ptr()).val};
+            let val_b = unsafe { &(*node_b.as_ptr()).val};
+
+            if val_a <= val_b{
+                merged_list.add(val_a.clone());
+                lista_node = unsafe{ (*node_a.as_ptr()).next};
+            }else{
+                merged_list.add(val_b.clone());
+                listb_node = unsafe{ (*node_b.as_ptr()).next};
+            }
         }
+        while let Some(node) = lista_node {
+            merged_list.add(unsafe { (*node.as_ptr()).val.clone() });
+            lista_node = unsafe { (*node.as_ptr()).next };
+        }
+
+        while let Some(node) = listb_node {
+            merged_list.add(unsafe { (*node.as_ptr()).val.clone() });
+            listb_node = unsafe { (*node.as_ptr()).next };
+        }
+
+        merged_list
 	}
 }
 
