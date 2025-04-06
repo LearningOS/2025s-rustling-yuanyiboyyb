@@ -2,7 +2,7 @@
 	queue
 	This question requires you to use queues to implement the functionality of the stac
 */
-// I AM NOT DONE
+
 
 #[derive(Debug)]
 pub struct Queue<T> {
@@ -67,15 +67,33 @@ impl<T> myStack<T> {
         }
     }
     pub fn push(&mut self, elem: T) {
-        //TODO
+        self.q1.enqueue(elem);
     }
     pub fn pop(&mut self) -> Result<T, &str> {
-        //TODO
-		Err("Stack is empty")
+        if self.q1.is_empty() {
+            return Err("Stack is empty");
+        }
+
+        // 将 q1 中所有元素转移到 q2 中，直到剩下一个元素
+        while self.q1.size() > 1 {
+            if let Ok(elem) = self.q1.dequeue() {
+                self.q2.enqueue(elem);
+            }
+        }
+
+        // 弹出栈顶元素（q1 的最后一个元素）
+        if let Ok(top_elem) = self.q1.dequeue() {
+            // 将 q2 中的元素再转回到 q1
+            while let Ok(elem) = self.q2.dequeue() {
+                self.q1.enqueue(elem);
+            }
+            return Ok(top_elem);
+        }
+
+        Err("Stack is empty")
     }
     pub fn is_empty(&self) -> bool {
-		//TODO
-        true
+        self.q1.is_empty()
     }
 }
 

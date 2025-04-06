@@ -2,10 +2,11 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
+
 
 use std::cmp::Ord;
 use std::default::Default;
+use std::os::unix::process::parent_id;
 
 pub struct Heap<T>
 where
@@ -37,7 +38,9 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.items.push(value);
+        self.count+=1;
+        self.heapify_up(self.count);
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -56,10 +59,56 @@ where
         self.left_child_idx(idx) + 1
     }
 
-    fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+    fn smallest_child_idx(&self, idx: usize) -> Option<usize> {
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+
+        // 如果左子节点不存在，直接返回右子节点索引
+        if right >= self.count {
+            return if left < self.count { Some(left) } else { None };
+        }
+
+        // 比较左右子节点，返回较小的子节点
+        if  (self.comparator)(&self.items[left], &self.items[right]) {
+            Some(left)
+        } else {
+            Some(right)
+        }
     }
+    fn heapify_up(&mut self, idx: usize) {
+        let mut idx = idx;
+        while idx != 1 {
+            let parent_idx = self.parent_idx(idx);
+            if (self.comparator)(&self.items[idx], &self.items[parent_idx]) {
+                self.items.swap(idx, parent_idx);
+                idx = parent_idx;
+            } else {
+                break;
+            }
+        }
+    }
+    fn heapify_down(&mut self, idx: usize) {
+        let mut idx = idx;
+        while let Some(child_idx) = self.smallest_child_idx(idx) {
+            if (self.comparator)(&self.items[child_idx],&self.items[idx]){
+                self.items.swap(idx, child_idx);
+                idx = child_idx;
+            }else{
+                break;
+            }
+        }
+    }
+
+    pub fn pop(&mut self) -> Option<T> {
+        if self.count == 0 {
+            return None;
+        }
+        self.items.swap(1, self.count ); // 将堆顶元素与最后一个元素交换
+        self.count -= 1;
+        self.heapify_down(1); // 下沉操作，恢复堆的性质
+        Some(self.items.pop().unwrap()) // 返回堆顶元素
+    }
+
 }
 
 impl<T> Heap<T>
@@ -84,8 +133,7 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        self.pop()
     }
 }
 
